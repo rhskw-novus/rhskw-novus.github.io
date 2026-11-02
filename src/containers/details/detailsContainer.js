@@ -33,6 +33,19 @@ const mapDispatchToProps = (dispatch) => {
         },
         onDetailsSubmit: (icon, text) => {
             dispatch(addPostToTimeline(icon, text));
+
+            // Pendo Track Event: an activity entry was added to the record's Activity timeline.
+            // The Submit button is shared by every activity tab, so the type, record type and
+            // entry length are only knowable here. URL shape: "/<record_type>/<id|new>/details"
+            if (window.pendo && typeof window.pendo.track === 'function') {
+                const pathSegments = window.location.pathname.split('/');
+                window.pendo.track('timeline_activity_logged', {
+                    activity_type: icon,
+                    record_type: pathSegments[1],
+                    is_new_record: pathSegments[2] === 'new',
+                    entry_length: text ? text.length : 0
+                });
+            }
         },
         onDetailsLoad: (url) => {
             localStorage.clear();
